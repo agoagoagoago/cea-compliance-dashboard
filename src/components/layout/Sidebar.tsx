@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Shield, FileCheck, ArrowRightLeft, FolderArchive,
-  Scale, AlertOctagon, Users, Building2
+  Scale, AlertOctagon, Users, Building2, MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +14,7 @@ const navItems = [
   { to: '/disputes', icon: Scale, label: 'Disputes' },
   { to: '/disciplinary', icon: AlertOctagon, label: 'Regulatory Events' },
   { to: '/salespersons', icon: Users, label: 'Salespersons' },
+  { to: '/chatbot', icon: MessageSquare, label: 'Ask Regulations' },
 ];
 
 export function Sidebar() {
