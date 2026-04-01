@@ -4,7 +4,7 @@ import { StatusBadge } from '@/components/common/StatusBadge';
 import { DataTable } from '@/components/common/DataTable';
 import { AlertBanner } from '@/components/common/AlertBanner';
 import { CheckCircle2, Circle, Clock, Plus, User, Building2 } from 'lucide-react';
-import type { Client } from '@/types';
+import type { Client, RiskLevel } from '@/types';
 import { formatDate } from '@/lib/utils';
 
 const CDD_STEPS_INDIVIDUAL = [
@@ -29,7 +29,36 @@ const CDD_STEPS_ENTITY = [
 export function CDDChecklist() {
   const clients = useStore((s) => s.clients);
   const cddRecords = useStore((s) => s.cddRecords);
+  const addClient = useStore((s) => s.addClient);
+  const users = useStore((s) => s.users);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [showNewClient, setShowNewClient] = useState(false);
+  const [newClient, setNewClient] = useState({
+    name: '', type: 'individual' as Client['type'], riskLevel: 'low' as RiskLevel,
+    pepStatus: false, nationality: '', idNumber: '', dateOfBirth: '', occupation: '',
+    actingOnBehalf: false, assignedTo: '',
+  });
+
+  const handleCreateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    addClient({
+      id: `c-${Date.now()}`,
+      name: newClient.name,
+      type: newClient.type,
+      riskLevel: newClient.riskLevel,
+      pepStatus: newClient.pepStatus,
+      cddCompleted: false,
+      createdAt: new Date().toISOString().split('T')[0],
+      assignedTo: newClient.assignedTo || users[0]?.id || '',
+      nationality: newClient.nationality || undefined,
+      idNumber: newClient.idNumber || undefined,
+      dateOfBirth: newClient.dateOfBirth || undefined,
+      occupation: newClient.occupation || undefined,
+      actingOnBehalf: newClient.actingOnBehalf,
+    });
+    setNewClient({ name: '', type: 'individual', riskLevel: 'low', pepStatus: false, nationality: '', idNumber: '', dateOfBirth: '', occupation: '', actingOnBehalf: false, assignedTo: '' });
+    setShowNewClient(false);
+  };
 
   const getClientCDDStatus = (clientId: string) => {
     const records = cddRecords.filter((r) => r.clientId === clientId);
@@ -100,10 +129,74 @@ export function CDDChecklist() {
           <h3 className="text-lg font-semibold text-gray-800">Client CDD Records</h3>
           <p className="text-sm text-gray-500">Customer Due Diligence — Reg 4-5, AML Regulations 2021</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark">
+        <button onClick={() => setShowNewClient(!showNewClient)} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark">
           <Plus className="h-4 w-4" /> New Client
         </button>
       </div>
+
+      {showNewClient && (
+        <div className="bg-white rounded-xl border border-card-border p-6 mb-4">
+          <h4 className="font-medium text-gray-700 mb-4">Add New Client</h4>
+          <form onSubmit={handleCreateClient} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Client Name *</label>
+              <input type="text" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required placeholder="Full name or entity name" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+              <select value={newClient.type} onChange={(e) => setNewClient({ ...newClient, type: e.target.value as Client['type'] })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="individual">Individual</option>
+                <option value="entity">Entity / Legal Arrangement</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Risk Level *</label>
+              <select value={newClient.riskLevel} onChange={(e) => setNewClient({ ...newClient, riskLevel: e.target.value as RiskLevel })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To *</label>
+              <select value={newClient.assignedTo} onChange={(e) => setNewClient({ ...newClient, assignedTo: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                <option value="">Select salesperson...</option>
+                {users.map((u) => <option key={u.id} value={u.id}>{u.name} ({u.registrationNumber})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+              <input type="text" value={newClient.nationality} onChange={(e) => setNewClient({ ...newClient, nationality: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. Singaporean" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+              <input type="text" value={newClient.idNumber} onChange={(e) => setNewClient({ ...newClient, idNumber: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="NRIC / Passport No." />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+              <input type="date" value={newClient.dateOfBirth} onChange={(e) => setNewClient({ ...newClient, dateOfBirth: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+              <input type="text" value={newClient.occupation} onChange={(e) => setNewClient({ ...newClient, occupation: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. Engineer" />
+            </div>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={newClient.pepStatus} onChange={(e) => setNewClient({ ...newClient, pepStatus: e.target.checked })} className="rounded" />
+                Politically Exposed Person (PEP)
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={newClient.actingOnBehalf} onChange={(e) => setNewClient({ ...newClient, actingOnBehalf: e.target.checked })} className="rounded" />
+                Acting on behalf of another
+              </label>
+            </div>
+            <div className="flex items-end gap-3">
+              <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark">Create Client</button>
+              <button type="button" onClick={() => setShowNewClient(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm">Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-card-border overflow-hidden">
         <DataTable
