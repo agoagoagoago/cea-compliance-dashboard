@@ -32,10 +32,12 @@ Below are the full texts of all 12 regulatory documents that govern estate agenc
 
 ${regulationText}`;
 
+// Initialize Anthropic client once at startup
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
     return;
   }
@@ -46,8 +48,6 @@ app.post('/api/chat', async (req, res) => {
     return;
   }
 
-  const client = new Anthropic({ apiKey });
-
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -56,7 +56,13 @@ app.post('/api/chat', async (req, res) => {
     const stream = await client.messages.stream({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: [
+        {
+          type: 'text' as const,
+          text: SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' as const },
+        },
+      ],
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
@@ -68,6 +74,12 @@ app.post('/api/chat', async (req, res) => {
         res.write(`data: ${JSON.stringify({ text: event.delta.text })}\n\n`);
       }
     }
+
+    const finalMessage = await stream.finalMessage();
+    console.log('Cache usage:', {
+      cache_creation: finalMessage.usage.cache_creation_input_tokens,
+      cache_read: finalMessage.usage.cache_read_input_tokens,
+    });
 
     res.write('data: [DONE]\n\n');
     res.end();
