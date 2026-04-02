@@ -199,6 +199,33 @@ export interface RiskAssessment {
   mitigationMeasures?: string;
 }
 
+export type AdvertisementMedium = 'online_portal' | 'social_media' | 'newspaper' | 'flyer_brochure' | 'signboard' | 'other';
+
+export type AdvertisementStatus = 'pending_vetting' | 'approved' | 'rejected' | 'published' | 'removed';
+
+export interface Advertisement {
+  id: string;
+  propertyAddress: string;
+  salespersonId: string;
+  salespersonName: string;
+  medium: AdvertisementMedium;
+  description: string;
+  clientApproval: boolean;
+  clientApprovalDate?: string;
+  vettingStatus: AdvertisementStatus;
+  vettedBy?: string;
+  vettedAt?: string;
+  vettingNotes?: string;
+  publishedAt?: string;
+  removedAt?: string;
+  agentNameDisplayed: boolean;
+  agentContactDisplayed: boolean;
+  agentLicenceDisplayed: boolean;
+  salespersonNameDisplayed: boolean;
+  salespersonRegDisplayed: boolean;
+  createdAt: string;
+}
+
 export interface AuditLogEntry {
   id: string;
   userId: string;

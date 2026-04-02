@@ -27,6 +27,11 @@ const statusStyles: Record<string, string> = {
   arbitration: 'bg-orange-100 text-orange-800',
   resolved: 'bg-green-100 text-green-800',
   withdrawn: 'bg-gray-200 text-gray-600',
+  pending_vetting: 'bg-yellow-100 text-yellow-800',
+  approved: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
+  published: 'bg-blue-100 text-blue-800',
+  removed: 'bg-gray-200 text-gray-600',
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

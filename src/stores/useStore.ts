@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type {
   User, Client, CDDRecord, Transaction, Document, CPERecord,
   Licence, Dispute, Alert, SanctionsScreening, STRReport,
-  RiskAssessment, AuditLogEntry, ComplianceScore
+  RiskAssessment, AuditLogEntry, ComplianceScore, Advertisement
 } from '@/types';
 
 interface AppState {
@@ -19,6 +19,7 @@ interface AppState {
   sanctionsScreenings: SanctionsScreening[];
   strReports: STRReport[];
   riskAssessments: RiskAssessment[];
+  advertisements: Advertisement[];
   auditLog: AuditLogEntry[];
   complianceScore: ComplianceScore;
 
@@ -41,6 +42,8 @@ interface AppState {
   updateDispute: (id: string, updates: Partial<Dispute>) => void;
   addRiskAssessment: (ra: RiskAssessment) => void;
   updateLicence: (updates: Partial<Licence>) => void;
+  addAdvertisement: (ad: Advertisement) => void;
+  updateAdvertisement: (id: string, updates: Partial<Advertisement>) => void;
 }
 
 // Demo data
@@ -177,6 +180,53 @@ const demoAuditLog: AuditLogEntry[] = [
   { id: 'al5', userId: 'u5', userName: 'Jason Ong', action: 'created_client', entityType: 'client', entityId: 'c2', details: 'Created client: Golden Dragon Pte Ltd', timestamp: '2026-02-01T11:00:00Z' },
 ];
 
+const demoAdvertisements: Advertisement[] = [
+  {
+    id: 'ad1', propertyAddress: '10 Bayfront Ave, #12-05, Marina Bay Residences',
+    salespersonId: 'u3', salespersonName: 'Ahmad bin Hassan', medium: 'online_portal',
+    description: 'PropertyGuru listing — 3BR condo, Marina Bay view, 1,200 sqft',
+    clientApproval: true, clientApprovalDate: '2025-12-01',
+    vettingStatus: 'published', vettedBy: 'u1', vettedAt: '2025-12-02',
+    vettingNotes: 'All identifiers correct. Property description accurate.',
+    publishedAt: '2025-12-03', removedAt: '2026-01-20',
+    agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: true,
+    salespersonNameDisplayed: true, salespersonRegDisplayed: true,
+    createdAt: '2025-12-01',
+  },
+  {
+    id: 'ad2', propertyAddress: '8 Shenton Way, #25-01',
+    salespersonId: 'u5', salespersonName: 'Jason Ong', medium: 'social_media',
+    description: 'Instagram post — luxury office space at Shenton Way, premium fittings',
+    clientApproval: true, clientApprovalDate: '2026-02-10',
+    vettingStatus: 'approved', vettedBy: 'u1', vettedAt: '2026-02-11',
+    vettingNotes: 'Approved. Remind salesperson to add licence number to post.',
+    agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: true,
+    salespersonNameDisplayed: true, salespersonRegDisplayed: false,
+    createdAt: '2026-02-10',
+  },
+  {
+    id: 'ad3', propertyAddress: '55 Newton Road, #08-12, Newton Suites',
+    salespersonId: 'u4', salespersonName: 'Priya Nair', medium: 'flyer_brochure',
+    description: 'Printed flyer — 2BR Newton Suites, near MRT, $1.5M',
+    clientApproval: false,
+    vettingStatus: 'pending_vetting',
+    agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: true,
+    salespersonNameDisplayed: true, salespersonRegDisplayed: true,
+    createdAt: '2026-03-28',
+  },
+  {
+    id: 'ad4', propertyAddress: '123 Bukit Timah Road, #03-01',
+    salespersonId: 'u3', salespersonName: 'Ahmad bin Hassan', medium: 'newspaper',
+    description: 'Straits Times classified — landed property at Bukit Timah for sale',
+    clientApproval: true, clientApprovalDate: '2026-03-10',
+    vettingStatus: 'rejected', vettedBy: 'u2', vettedAt: '2026-03-12',
+    vettingNotes: 'Rejected: claims "best value in district" without substantiation. Remove unverifiable claim per Section 12.4.',
+    agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: false,
+    salespersonNameDisplayed: true, salespersonRegDisplayed: false,
+    createdAt: '2026-03-10',
+  },
+];
+
 export const useStore = create<AppState>((set) => ({
   currentUser: demoUsers[0],
   users: demoUsers,
@@ -186,6 +236,7 @@ export const useStore = create<AppState>((set) => ({
   documents: demoDocuments,
   cpeRecords: demoCPERecords,
   licence: demoLicence,
+  advertisements: demoAdvertisements,
   disputes: [],
   alerts: demoAlerts,
   sanctionsScreenings: [],
@@ -225,5 +276,9 @@ export const useStore = create<AppState>((set) => ({
   addRiskAssessment: (ra) => set((s) => ({ riskAssessments: [...s.riskAssessments, ra] })),
   updateLicence: (updates) => set((s) => ({
     licence: s.licence ? { ...s.licence, ...updates } : s.licence,
+  })),
+  addAdvertisement: (ad) => set((s) => ({ advertisements: [...s.advertisements, ad] })),
+  updateAdvertisement: (id, updates) => set((s) => ({
+    advertisements: s.advertisements.map((a) => a.id === id ? { ...a, ...updates } : a),
   })),
 }));
