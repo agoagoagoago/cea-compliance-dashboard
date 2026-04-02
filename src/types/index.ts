@@ -223,6 +223,8 @@ export interface Advertisement {
   agentLicenceDisplayed: boolean;
   salespersonNameDisplayed: boolean;
   salespersonRegDisplayed: boolean;
+  attachmentName?: string;
+  attachmentUrl?: string;
   createdAt: string;
 }
 

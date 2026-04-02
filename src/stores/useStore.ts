@@ -191,6 +191,7 @@ const demoAdvertisements: Advertisement[] = [
     publishedAt: '2025-12-03', removedAt: '2026-01-20',
     agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: true,
     salespersonNameDisplayed: true, salespersonRegDisplayed: true,
+    attachmentName: 'marina-bay-listing.pdf',
     createdAt: '2025-12-01',
   },
   {
@@ -202,6 +203,7 @@ const demoAdvertisements: Advertisement[] = [
     vettingNotes: 'Approved. Remind salesperson to add licence number to post.',
     agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: true,
     salespersonNameDisplayed: true, salespersonRegDisplayed: false,
+    attachmentName: 'shenton-way-ig-post.jpg',
     createdAt: '2026-02-10',
   },
   {
@@ -223,6 +225,7 @@ const demoAdvertisements: Advertisement[] = [
     vettingNotes: 'Rejected: claims "best value in district" without substantiation. Remove unverifiable claim per Section 12.4.',
     agentNameDisplayed: true, agentContactDisplayed: true, agentLicenceDisplayed: false,
     salespersonNameDisplayed: true, salespersonRegDisplayed: false,
+    attachmentName: 'bukit-timah-classified.pdf',
     createdAt: '2026-03-10',
   },
 ];

@@ -4,7 +4,7 @@ import { DataTable } from '@/components/common/DataTable';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { AlertBanner } from '@/components/common/AlertBanner';
 import { formatDate } from '@/lib/utils';
-import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Paperclip, Upload } from 'lucide-react';
 import type { Advertisement, AdvertisementMedium } from '@/types';
 
 const mediumLabels: Record<AdvertisementMedium, string> = {
@@ -27,6 +27,7 @@ export function AdvertisementTracker() {
   const users = useStore((s) => s.users);
   const addAdvertisement = useStore((s) => s.addAdvertisement);
   const [showForm, setShowForm] = useState(false);
+  const [attachment, setAttachment] = useState<{ name: string; url: string } | null>(null);
   const [formData, setFormData] = useState({
     propertyAddress: '',
     salespersonId: '',
@@ -39,6 +40,13 @@ export function AdvertisementTracker() {
     salespersonNameDisplayed: true,
     salespersonRegDisplayed: true,
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setAttachment({ name: file.name, url });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +68,8 @@ export function AdvertisementTracker() {
       agentLicenceDisplayed: formData.agentLicenceDisplayed,
       salespersonNameDisplayed: formData.salespersonNameDisplayed,
       salespersonRegDisplayed: formData.salespersonRegDisplayed,
+      attachmentName: attachment?.name,
+      attachmentUrl: attachment?.url,
       createdAt: new Date().toISOString().split('T')[0],
     });
     setFormData({
@@ -67,6 +77,7 @@ export function AdvertisementTracker() {
       clientApproval: false, agentNameDisplayed: true, agentContactDisplayed: true,
       agentLicenceDisplayed: true, salespersonNameDisplayed: true, salespersonRegDisplayed: true,
     });
+    setAttachment(null);
     setShowForm(false);
   };
 
@@ -140,6 +151,24 @@ export function AdvertisementTracker() {
               <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" rows={3} required />
             </div>
             <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sample Advertisement</label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 cursor-pointer hover:bg-gray-50">
+                  <Upload className="h-4 w-4" />
+                  {attachment ? 'Change File' : 'Upload File'}
+                  <input type="file" onChange={handleFileChange} accept="image/*,.pdf,.doc,.docx" className="hidden" />
+                </label>
+                {attachment && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Paperclip className="h-4 w-4" />
+                    <span>{attachment.name}</span>
+                    <button type="button" onClick={() => setAttachment(null)} className="text-red-500 hover:text-red-700 text-xs ml-1">&times;</button>
+                  </div>
+                )}
+                {!attachment && <span className="text-xs text-gray-400">Images, PDF, or Word documents</span>}
+              </div>
+            </div>
+            <div className="md:col-span-2">
               <p className="text-sm font-medium text-gray-700 mb-2">Identification Checklist (Section 12)</p>
               <div className="flex flex-wrap gap-4">
                 {[
@@ -175,6 +204,12 @@ export function AdvertisementTracker() {
             )},
             { header: 'Salesperson', accessor: 'salespersonName' as keyof Advertisement },
             { header: 'Medium', accessor: (row: Advertisement) => mediumLabels[row.medium] },
+            { header: 'Sample', accessor: (row: Advertisement) => row.attachmentName ? (
+              <a href={row.attachmentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs">
+                <Paperclip className="h-3.5 w-3.5" />
+                <span className="truncate max-w-[100px]">{row.attachmentName}</span>
+              </a>
+            ) : <span className="text-gray-400 text-xs">None</span> },
             { header: 'Status', accessor: (row: Advertisement) => <StatusBadge status={row.vettingStatus} /> },
             { header: 'Client OK', accessor: (row: Advertisement) => <ComplianceIcon ok={row.clientApproval} /> },
             { header: 'IDs Complete', accessor: (row: Advertisement) => {
